@@ -40,4 +40,4 @@ for character_folder in os.listdir(data_path):
 train_valid_idx = pd.DataFrame({"images": train_set + validation_set,
                                 "label": ["train"] * len(train_set) + ["valid"] * len(validation_set)})
 
-train_valid_idx.to_csv("data.csv")
+train_valid_idx.to_csv("data.csv", index = False)
