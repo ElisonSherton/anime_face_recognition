@@ -4,6 +4,7 @@ import random
 import PIL.Image
 import numpy as np
 import pandas as pd
+from torchvision import transforms
 import matplotlib.pyplot as plt
 
 IMSIZE = (225, 225)
@@ -29,7 +30,23 @@ class siameseDataset(torch.utils.data.Dataset):
 
         # Save the type of dataset i.e. train/validation/test
         self.dtype = dtype
-    
+
+        # Save the transforms for augmentation in the transforms instance variable
+        if self.dtype == "train":
+            self.transforms =   transforms.Compose([transforms.Resize(256),
+                                                    transforms.RandomCrop(225),
+                                                    transforms.RandomHorizontalFlip(),
+                                                    transforms.ToTensor(),
+                                                    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                                         std=[0.229, 0.224, 0.225]),
+                                                ])
+        else:
+            self.transforms = transforms.Compose([transforms.Resize(225),
+                                                  transforms.ToTensor(),
+                                                  transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                                       std=[0.229, 0.224, 0.225]),
+                                                ])
+
     def __len__(self):
         return len(self.images)
     
@@ -49,7 +66,7 @@ class siameseDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         
         # Function to read an image, resize it to specified size and convert to RGB
-        read_img = lambda x: np.asarray(PIL.Image.open(x).resize(IMSIZE).convert('RGB'))
+        read_img = lambda x: self.transforms(PIL.Image.open(x).convert('RGB'))
         
         # Sample P classes randomly
         classes = random.sample(self.classes, self.P)
@@ -66,8 +83,8 @@ class siameseDataset(torch.utils.data.Dataset):
         # Create a array of all images by reading them using the lambda function defined above
         images = []
         for img in batch_images:
-            images.append(read_img(img))
-        images = np.concatenate([images], axis = 0)
+            images.append(read_img(img).unsqueeze(0))
+        images = torch.cat(images, dim = 0)
 
         # Create a numpy array of labels out of the list created above
         batch_labels = np.array(batch_labels)

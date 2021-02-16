@@ -18,14 +18,6 @@ class enet_model(nn.Module):
         # Create a instance variable for the model obtained by binding all the child layers above
         self.eff = nn.Sequential(*children)
     
-    def forward(self, image_batch):
-        
-        # Function to transpose the vector in a shape suitable for model forward propagation
-        trp = lambda x: torch.transpose(torch.transpose(x, 2, 3), 1, 2).float()
-
-        # Map the transpose function to all anchor, positive and negative batch of images
-        
-        image_batch = trp(image_batch)
-        
+    def forward(self, image_batch):        
         # Return the feature vectors extracted from image batches
         return self.eff(image_batch)
