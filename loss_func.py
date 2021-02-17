@@ -12,6 +12,7 @@ class batchHardTripletLoss(nn.Module):
         self.margin = margin
         self.squared = squared
         self.agg = agg
+        self.eps = 1e-10
     
     def get_pairwise_distances(self, feat_vecs):
         """
@@ -22,14 +23,11 @@ class batchHardTripletLoss(nn.Module):
         a_squared = ab.diag().unsqueeze(1)
         b_squared = ab.diag().unsqueeze(0)
         distances = a_squared - 2 * ab + b_squared
-        distances.clamp(min = 0)
+        distances.clamp(min = self.eps)
         
         if not self.squared:
-            eps = 1e-20
-            mask = torch.eq(distances, 0).float()
-            distances += mask * eps
-            distances = torch.sqrt(distances)
-            distances *= (1 - mask)
+            distances = torch.sqrt(distances + self.eps * self.eps)
+
         return distances
             
         
@@ -38,8 +36,9 @@ class batchHardTripletLoss(nn.Module):
         Get a binary matrix corresponding to valid duplet pairs for 
         (anchor, positive) & (anchor, negative) pairs
         """
+        DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
         PK = labels.shape[1]
-        mask = torch.zeros(PK, PK)
+        mask = torch.zeros(PK, PK).to(DEVICE)
         
         for idx, item in enumerate(labels[0]):
             for inner_idx, inner_item in enumerate(labels[0]):
@@ -61,15 +60,17 @@ class batchHardTripletLoss(nn.Module):
         """
         Define the loss function implementation here
         """
+        DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
         # Get the pairwise distances of all images from one another
         distances = self.get_pairwise_distances(feat_vecs)
         
         # Get the toughest positive pair by first filtering out the (anchor, positive)
         # pairs using the get_mask routine and then find the max across rows
-        positive_mask = self.get_mask(labels, type_ = "positive")
+        positive_mask = self.get_mask(labels, type_ = "positive").to(DEVICE)
         toughest_positive_distance = (distances * positive_mask).max(dim = 1)[0]
         
-        negative_mask = self.get_mask(labels, type_ = "negative")
+        negative_mask = self.get_mask(labels, type_ = "negative").to(DEVICE)
         
         # Add the maxiumum negative distance to all the non-valid pairs
         # on a rowwise basis and then out of them whichever is the minimum 
@@ -79,7 +80,7 @@ class batchHardTripletLoss(nn.Module):
         toughest_negative_distance = distances.min(dim = 1)[0]
         
         # Find the triplet loss by using the two distances obtained above
-        triplet_loss = (toughest_positive_distance - toughest_negative_distance + self.margin).clamp(min = 0)
+        triplet_loss = (toughest_positive_distance - toughest_negative_distance + self.margin).clamp(min = self.eps)
         
         # Aggregate the loss to mean/sum based on the initialization of the loss function
         if self.agg == "mean":

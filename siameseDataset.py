@@ -33,22 +33,21 @@ class siameseDataset(torch.utils.data.Dataset):
 
         # Save the transforms for augmentation in the transforms instance variable
         if self.dtype == "train":
-            self.transforms =   transforms.Compose([transforms.Resize(256),
-                                                    transforms.RandomCrop(225),
+            self.transforms =   transforms.Compose([transforms.RandomRotation(degrees = 10),
+                                                    transforms.RandomGrayscale(),
                                                     transforms.RandomHorizontalFlip(),
                                                     transforms.ToTensor(),
                                                     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                                                          std=[0.229, 0.224, 0.225]),
                                                 ])
         else:
-            self.transforms = transforms.Compose([transforms.Resize(225),
-                                                  transforms.ToTensor(),
+            self.transforms = transforms.Compose([transforms.ToTensor(),
                                                   transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                                                        std=[0.229, 0.224, 0.225]),
                                                 ])
 
     def __len__(self):
-        return len(self.images)
+        return int(len(self.images) // (self.P * self.K))
     
     def get_character_images(self, character_name):
         
@@ -66,7 +65,7 @@ class siameseDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         
         # Function to read an image, resize it to specified size and convert to RGB
-        read_img = lambda x: self.transforms(PIL.Image.open(x).convert('RGB'))
+        read_img = lambda x: self.transforms(PIL.Image.open(x).resize(IMSIZE).convert('RGB'))
         
         # Sample P classes randomly
         classes = random.sample(self.classes, self.P)
