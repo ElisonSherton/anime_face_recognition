@@ -4,7 +4,6 @@
 import PIL.Image
 import os
 import shutil
-import glob
 
 # Create a new directory where we would like to transfer all the files, overwrite if already exists
 new_pth = "/home/vinayak/random_anime_faces/"

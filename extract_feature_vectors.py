@@ -14,14 +14,12 @@ from tqdm import tqdm
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-
 # Initialize constant variables
 IMAGES_PATH = "/home/vinayak/cleaned_anime_faces/"
 TRAIN_FV_PATH = "/home/vinayak/anime_feature_vectors_train.pkl"
 VALID_FV_PATH = "/home/vinayak/anime_feature_vectors_valid.pkl"
-MODEL_PATH = "./enet_model.pth"
+MODEL_PATH = "./resources/enet_model.pth"
 IMSIZE = (225, 225)
-
 
 # Create a model and load the model weights
 model = enet_model()
