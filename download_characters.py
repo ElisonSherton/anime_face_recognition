@@ -2,6 +2,7 @@
 from google_images_download import google_images_download   
 from tqdm import tqdm
 
+OUT_DIR = "/home/vinayak/anime_faces"
 # Instantiate the class for downloading images
 response = google_images_download.googleimagesdownload()   
 
@@ -14,7 +15,7 @@ def download_images(keyword, limit = 1):
     arguments = {"keywords": keyword ,
                  "limit": limit , 
                  "print_urls": False,
-                 "output_directory": "/home/vinayak/anime_faces"}   
+                 "output_directory": OUT_DIR}   
 
     # Pass the arguments to above function and download images
     paths = response.download(arguments)  

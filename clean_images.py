@@ -7,7 +7,7 @@ import shutil
 import glob
 
 # Create a new directory where we would like to transfer all the files, overwrite if already exists
-new_pth = "/home/vinayak/cleaned_anime_faces/"
+new_pth = "/home/vinayak/random_anime_faces/"
 original_images_pth = "/home/vinayak/anime_faces"
 
 if os.path.exists(new_pth):

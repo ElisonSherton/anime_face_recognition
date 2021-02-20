@@ -8,15 +8,17 @@ from torchvision import transforms
 from siameseModel import *
 
 import os
+import pandas as pd
 import PIL.Image
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 # Initialize constant variables
 IMAGES_PATH = "/home/vinayak/cleaned_anime_faces/"
-FV_PATH = "/home/vinayak/anime_feature_vectors.pkl"
+TRAIN_FV_PATH = "/home/vinayak/anime_feature_vectors_train.pkl"
+VALID_FV_PATH = "/home/vinayak/anime_feature_vectors_valid.pkl"
 MODEL_PATH = "./enet_model.pth"
 IMSIZE = (225, 225)
 
@@ -57,16 +59,31 @@ for root, dirs, files in os.walk(IMAGES_PATH):
         pth = os.path.join(root, item)
         all_files.append(pth)
 
+# Extract feature vectors for train and validation separately and store them in a dictionary
+def extract_feature_vectors(dataframe):
+    feature_vectors = {}
 
-# Extract feature vectors and store them in a dictionary
-feature_vectors = {}
+    for row in tqdm(dataframe.itertuples(), desc = f"Extracting feature vectors from {len(dataframe)} images"):
+        file_ = row[1]
+        with torch.no_grad():
+            vector = list(predict_feature_vector(file_).numpy()[0])
+        feature_vectors[file_] = vector
+    
+    return feature_vectors
 
-for file_ in tqdm(all_files, desc = f"Extracting feature vectors from {len(all_files)} images"):
-    with torch.no_grad():
-        vector = list(predict_feature_vector(file_).numpy()[0])
-    feature_vectors[file_] = vector
+# Segregate the dataset in terms of train and validation datasets
+df = pd.read_csv("data.csv")
+train_df = df[df.label == "train"].reset_index(drop = True)
+valid_df = df[df.label == "valid"].reset_index(drop = True)
+
+train_fvs = extract_feature_vectors(train_df)
+valid_fvs = extract_feature_vectors(valid_df)
 
 # Save the feature vectors as a pickle file to load them and analyze them later for nearest neighbours
-with open(FV_PATH, "wb") as f:
-    pickle.dump(feature_vectors, f)
+with open(TRAIN_FV_PATH, "wb") as f:
+    pickle.dump(train_fvs, f)
+    f.close()
+
+with open(VALID_FV_PATH, "wb") as f:
+    pickle.dump(valid_fvs, f)
     f.close()

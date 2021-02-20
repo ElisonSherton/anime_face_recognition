@@ -4,7 +4,7 @@ import shutil
 
 # Base path where images are stored
 base_pth = "/home/vinayak/cleaned_anime_faces"
-N = 30
+N = 32
 
 # Loop over every character 
 for character in os.listdir(base_pth):

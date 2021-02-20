@@ -7,7 +7,7 @@ import pandas as pd
 
 # Set a seed in random module for ensuring reproductibility
 random.seed(10)
-split_percent = 0.8
+split_percent = 0.75
 data_path = "/home/vinayak/cleaned_anime_faces"
 
 # Create containers to hold paths to train and validation images

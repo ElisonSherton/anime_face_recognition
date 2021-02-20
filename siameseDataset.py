@@ -7,20 +7,31 @@ import pandas as pd
 from torchvision import transforms
 import matplotlib.pyplot as plt
 
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 IMSIZE = (225, 225)
+
 class siameseDataset(torch.utils.data.Dataset):
     
     def __init__(self, data, dtype = "train", P = 4, K = 4):
         self.images = data
+        self.images_selected = {k:False for k in self.images}
+        
         
         # In batch hard triplet loss mining, we need to sample P classes and K images per class
         # Save these in the dataset as we will curate the batch using this dataset class only
+        if dtype == "train":
+            self.limit = 6
+        else:
+            self.limit = 2
         self.P = P
         self.K = K
         
         # Store all the classes in a list
         classes = list(set([x.split("/")[-2] for x in self.images]))
         self.classes = classes
+        self.characters_selected = {k:0 for k in self.classes}
 
         # Create a mapping of class - integer label
         class_mapping = {}
@@ -49,15 +60,38 @@ class siameseDataset(torch.utils.data.Dataset):
     def __len__(self):
         return int(len(self.images) // (self.P * self.K))
     
-    def get_character_images(self, character_name):
+    def sample_characters(self):
+        
+        all_classes = list(self.classes)
+        random.shuffle(all_classes)
+        
+        char_list = []
+        
+        while len(char_list) < self.P:
+            
+            char_ = random.sample(all_classes, 1)[0]
+            
+            if (self.characters_selected[char_] < self.limit):
+                char_list.append(char_)
+                self.characters_selected[char_] += 1
+                
+        return char_list
+
+    
+    def sample_character_images(self, character_name):
         
         all_character_images = []
         
         # Search in all images which ones have the specified character name
         # and return back a batch of those images only
         for img in self.images:
-            if character_name in img:
+            
+            if len(all_character_images) == self.K:
+                break
+                
+            if (character_name in img) and (not self.images_selected[img]):
                 all_character_images.append(img)
+                self.images_selected[img] = True
         
         return all_character_images            
         
@@ -68,14 +102,14 @@ class siameseDataset(torch.utils.data.Dataset):
         read_img = lambda x: self.transforms(PIL.Image.open(x).resize(IMSIZE).convert('RGB'))
         
         # Sample P classes randomly
-        classes = random.sample(self.classes, self.P)
+        classes = self.sample_characters()
         
         batch_images = []
         batch_labels = []
         
         # Sample K images from each of the P classes respectively
         for cls in classes:
-            char_imgs = random.sample(self.get_character_images(cls), self.K)
+            char_imgs = self.sample_character_images(cls)
             batch_images.extend(char_imgs)
             batch_labels.extend([self.class_mapping[cls]] * self.K)
         
@@ -89,45 +123,3 @@ class siameseDataset(torch.utils.data.Dataset):
         batch_labels = np.array(batch_labels)
         
         return (images, batch_labels)
-    
-    def get_triplet(self, i_pth):
-        
-        # Get the anchor class from the path
-        anchor_class = i_pth.split("/")[-2]
-                
-        # Create a pool of images which contain positive class images except
-        # the image in question itself and out of them sample one randomly 
-        positive_pool = [x for x in self.images if (anchor_class in x) and (x != i_pth)]
-        positive_sample = random.sample(positive_pool, 1)[0]
-        
-        # Create a pool of images which contain negative class images
-        # and out of them, sample one randomly
-        negative_pool = [x for x in self.images if not anchor_class in x]
-        negative_sample = random.sample(negative_pool, 1)[0]
-        
-        return (i_pth, positive_sample, negative_sample)
-    
-    def disp_img(self, axis, pth, type_):
-
-        # Read the image, resize it to IMSIZE and convert it to RGB mode
-        read_img = lambda x: PIL.Image.open(x).resize(IMSIZE).convert('RGB')
-
-        # Plot the image on an axis object, turn off the markings and set the title
-        axis.imshow(read_img(pth))
-        axis.axis("off")
-        axis.set_title(type_)
-    
-    def show_sample(self):
-        
-        # Randomly sample an image out of the entire set of images
-        i_pth = random.sample(self.images, 1)[0]
-        
-        A, P, N = self.get_triplet(i_pth)
-        
-        fig, ax = plt.subplots(1, 3, figsize = (10, 10))
-        
-        self.disp_img(ax[0], A, "Anchor")
-        self.disp_img(ax[1], P, "Positive")
-        self.disp_img(ax[2], N, "Negative")
-        
-        fig.tight_layout()

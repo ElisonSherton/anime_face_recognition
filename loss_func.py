@@ -12,7 +12,7 @@ class batchHardTripletLoss(nn.Module):
         self.margin = margin
         self.squared = squared
         self.agg = agg
-        self.eps = 1e-10
+        self.eps = 1e-8
     
     def get_pairwise_distances(self, feat_vecs):
         """
@@ -23,10 +23,10 @@ class batchHardTripletLoss(nn.Module):
         a_squared = ab.diag().unsqueeze(1)
         b_squared = ab.diag().unsqueeze(0)
         distances = a_squared - 2 * ab + b_squared
-        distances.clamp(min = self.eps)
+        distances = nn.ReLU()(distances)
         
         if not self.squared:
-            distances = torch.sqrt(distances + self.eps * self.eps)
+            distances = torch.sqrt(distances + self.eps)
 
         return distances
             
@@ -80,7 +80,7 @@ class batchHardTripletLoss(nn.Module):
         toughest_negative_distance = distances.min(dim = 1)[0]
         
         # Find the triplet loss by using the two distances obtained above
-        triplet_loss = (toughest_positive_distance - toughest_negative_distance + self.margin).clamp(min = self.eps)
+        triplet_loss = nn.ReLU()(toughest_positive_distance - toughest_negative_distance + self.margin)
         
         # Aggregate the loss to mean/sum based on the initialization of the loss function
         if self.agg == "mean":
