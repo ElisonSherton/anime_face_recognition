@@ -42,7 +42,7 @@ for root, dirs, files in os.walk(src_path):
     for file in files:
         all_files.append(os.path.join(root, file))
 
-# For every source file, apply the face detection haar cascade and extract 
+# For every source file, apply the face detection lbpcascade and extract 
 # the images in destination directory
 for file in all_files:
 
