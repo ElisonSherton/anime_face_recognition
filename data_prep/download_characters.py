@@ -2,7 +2,8 @@
 from google_images_download import google_images_download   
 from tqdm import tqdm
 
-OUT_DIR = "/home/vinayak/anime_faces"
+OUT_DIR = "/home/vinayak/random_anime_faces"
+N = 50
 # Instantiate the class for downloading images
 response = google_images_download.googleimagesdownload()   
 
@@ -25,6 +26,6 @@ with open("character_list.txt", "r") as f:
     characters = [x.replace("\n", "") for x in f.readlines()]
     f.close()
 
-# Download 30 images for each character
-for person in tqdm(characters, desc = f"Downloading 30 images for {len(characters)} characters."):
-    download_images(person, 30)
+# Download N images for each character
+for person in tqdm(characters, desc = f"Downloading {N} images for {len(characters)} characters."):
+    download_images(person, N)

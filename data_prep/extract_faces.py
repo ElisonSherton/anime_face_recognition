@@ -1,9 +1,9 @@
-# To use HAAR Cascade for face detection
+# To use LBP Cascade for face detection
 import cv2
 import os
 
 src_path = "/home/vinayak/random_anime_faces"
-dest_path = "/home/vinayak/cropped_anime_faces"
+dest_path = "/home/vinayak/half_cropped_images"
 
 # Use the cascade xml file to create a haar cascade detector
 cascade = cv2.CascadeClassifier("../resources/lbpcascade_animeface.xml")
