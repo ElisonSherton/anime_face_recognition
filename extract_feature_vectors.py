@@ -69,7 +69,7 @@ def extract_feature_vectors(dataframe):
     return feature_vectors
 
 # Segregate the dataset in terms of train and validation datasets
-df = pd.read_csv("data.csv")
+df = pd.read_csv("./resources/data.csv")
 train_df = df[df.label == "train"].reset_index(drop = True)
 valid_df = df[df.label == "valid"].reset_index(drop = True)
 
