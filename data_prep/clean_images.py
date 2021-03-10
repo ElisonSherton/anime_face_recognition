@@ -7,7 +7,7 @@ import shutil
 
 # Create a new directory where we would like to transfer all the files, overwrite if already exists
 new_pth = "/home/vinayak/random_anime_faces/"
-original_images_pth = "/home/vinayak/anime_faces"
+original_images_pth = "/home/vinayak/AnimeFaceDset"
 
 if os.path.exists(new_pth):
     shutil.rmtree(new_pth)

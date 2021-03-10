@@ -3,7 +3,7 @@ import random
 import shutil
 
 # Base path where images are stored
-base_pth = "/home/vinayak/cleaned_anime_faces"
+base_pth = "/home/vinayak/AnimeFaceDset"
 N = 32
 
 # Loop over every character 

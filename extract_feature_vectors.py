@@ -15,7 +15,7 @@ from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # Initialize constant variables
-IMAGES_PATH = "/home/vinayak/cleaned_anime_faces/"
+IMAGES_PATH = "/home/vinayak/AnimeFaceDset/"
 TRAIN_FV_PATH = "/home/vinayak/anime_feature_vectors_train.pkl"
 VALID_FV_PATH = "/home/vinayak/anime_feature_vectors_valid.pkl"
 MODEL_PATH = "./resources/enet_model.pth"
@@ -25,7 +25,6 @@ IMSIZE = (225, 225)
 model = enet_model()
 model.load_state_dict(torch.load(MODEL_PATH))
 model.eval();
-
 
 # Write a function to read image and extract feature vector
 def predict_feature_vector(img_pth):
