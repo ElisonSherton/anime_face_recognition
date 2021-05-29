@@ -1,3 +1,5 @@
+from fastai.vision.all import *
+
 class network(nn.Module):
     def __init__(self, output_dim = 256):
         '''
