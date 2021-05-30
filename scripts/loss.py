@@ -1,5 +1,5 @@
 from fastai.vision.all import *
-from pytorch_metric_learning import *
+from pytorch_metric_learning import miners, losses
 
 class loss(nn.Module):
     def __init__(self, margin = 0.1, agg = 'mean'):

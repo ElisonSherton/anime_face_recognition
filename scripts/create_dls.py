@@ -6,9 +6,7 @@ def get_character_items(item):
     y = item.images.apply(lambda x: x.split('/')[0])
     return (x, y)
 
-def create_databunch(csv_path_name, bs = 16):
-    
-    df = pd.read_csv(csv_path_name)
+def create_databunch(df, bs = 16):
     
     # Get the indices of validation set images
     validation_indices = df[df.is_valid == 'valid'].index.values
@@ -21,7 +19,7 @@ def create_databunch(csv_path_name, bs = 16):
                                    get_items = get_character_items,
     
                                    # Specify the train and validation split indices
-                                   splitter = IndexSplitter(validation_indices),
+                                   splitter = FuncSplitter(lambda x: False),
     
                                    # Specify item transformations
                                    item_tfms = RandomResizedCrop(300),
